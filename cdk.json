@@ -17,6 +17,7 @@
     ]
   },
   "context": {
+    "@aws-cdk/core:bootstrapQualifier": "moecdk",
     "@aws-cdk/aws-apigateway:usagePlanKeyOrderInsensitiveId": true,
     "@aws-cdk/core:stackRelativeExports": true,
     "@aws-cdk/aws-rds:lowercaseDbIdentifier": true,
@@ -33,5 +34,6 @@
       "aws",
       "aws-cn"
     ]
-  }
+  },
+  "toolkitStackName": "CDKToolkit"
 }

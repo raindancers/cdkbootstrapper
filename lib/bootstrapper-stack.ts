@@ -1,16 +1,22 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { Bootstrapper } from './boostrapper';
 
 export class BootstrapperStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
+    const bootstrap_props = {
+      CdkBootstrapRootQualifier: 'moecdk',
+      CdkBootstrapRootRegions: ['ap-southeast-2'],
+      BootStrapStacks: [
+        {
+          StackName: 'moe-admin-roles',
+          Regions: ['ap-southeast-2']
+        },   
+      ]
+    }
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'BootstrapperQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    new Bootstrapper(this, 'Bootstrapper', bootstrap_props )
   }
 }
