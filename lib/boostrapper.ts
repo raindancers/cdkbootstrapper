@@ -89,7 +89,8 @@ export class Bootstrapper extends constructs.Construct {
         effect: iam.Effect.ALLOW,
         actions: [
           "organizations:ListAccounts",
-          "organizations:DescribeAccount"
+          "organizations:DescribeAccount",
+          "ssm:PutParameter"
         ],
         resources: ['*']
       })
@@ -100,7 +101,7 @@ export class Bootstrapper extends constructs.Construct {
       new iam.PolicyStatement({
         effect: iam.Effect.ALLOW,
         actions: [
-          "codebuild:StartBuild",
+          "codebuild:StartBuild"
         ],
         resources: [bootStrapperCodeBuild.projectArn]
       })

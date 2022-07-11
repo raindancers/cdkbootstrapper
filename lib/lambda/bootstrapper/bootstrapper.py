@@ -4,6 +4,7 @@ import os
 import yaml
 
 codebuild = boto3.client('codebuild')
+ssm = boto3.client('ssm')
 
 def on_event(event, context):
 
@@ -23,7 +24,7 @@ def on_event(event, context):
 		account_id = event['accountId']
 		account_name = event['account_name']
 	
-	# build the buildspec
+	# build the buildspec Bit
 	# link packages, authenticate and set the iam alias
 	build_commands = [
 		f'export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
@@ -102,6 +103,13 @@ def on_event(event, context):
 			]
 		}
 	}
+
+	ssm.put_parameter(
+		Name=f'/cdk-bootstrap/{CDK_BOOTSTRAP_QUALIFER}/version',
+		Value='10',
+		Type='String',
+		Overwrite=True
+	)
 	
 	codebuild.start_build(
 		projectName = CODEBUILD_PROJECT_NAME,
