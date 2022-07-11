@@ -85,7 +85,7 @@ def on_event(event, context):
 				'commands': []
 			},
 			'build': {
-				'commands': build_commands + cdk_bootstrap_env #+ deploy_bootstrap_stacks
+				'commands': build_commands + cdk_bootstrap_env + deploy_bootstrap_stacks
 			},
 			'post_build': {
 				'commands': [

@@ -1,10 +1,8 @@
 # Welcome to your CDK TypeScript project
 
-This is a blank project for CDK development with TypeScript.
+this code is from the blog 'Automating AWS account bootstrapping with AWS-CDK.'
+https://medium.com/@andrewfrazer/automating-aws-account-bootstrapping-with-aws-cdk-117e5ead1c51
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
-
-## Useful commands
 
 * `npm run build`   compile typescript to js
 * `npm run watch`   watch for changes and compile
