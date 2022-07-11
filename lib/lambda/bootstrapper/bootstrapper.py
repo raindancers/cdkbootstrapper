@@ -41,37 +41,48 @@ def on_event(event, context):
 		'cd includelab',
 		'npm update -g npm@latest',
 		'npm install',
-		# 'npm install -g aws-cdk-lib',
-		# 'npm install -g typescript',
-		# 'echo building project',
-		# 'npm install --force',
-		# 'tsc -v',
-		'npx cdk bootstrap --show-template > lib/cfn/bootstrap-template.yaml'
+		'npx cdk bootstrap --show-template > lib/cfn/bootstrap-template.yaml',
+		'npx cdk synth'
 	]
-	cdk_bootstrap_env.append('npx cdk synth')
+	
 	for region in CDK_BOOTSTRAP_REGIONS:
-		cdk_bootstrap_env.append(f'export AWS_DEFAULT_REGION={region}')
-		cdk_bootstrap_env.append(f'aws cloudformation create-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
+		cdk_bootstrap_env.extend(
+			[
+				f'export AWS_DEFAULT_REGION={region}',
+				f'aws cloudformation create-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
 				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM || \
-			aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
+				aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
-				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && ')
-	cdk_bootstrap_env.append('cd ..')
-	cdk_bootstrap_env.append('echo Finished CDK Bootstrapping')
+				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && '
+			]
+		)
+	
+	cdk_bootstrap_env.extend(
+		[
+			'cd ..',
+			'echo Finished CDK Bootstrapping'
+		]
+	)
+	
 	print('bootstrap_cmds:', cdk_bootstrap_env)
 
 	# create a string of commands to deploy cdk apps
 	deploy_bootstrap_stacks = []
 	for stack in CDK_APPS:
 		for region in stack['Regions']:
-			deploy_bootstrap_stacks.append(f'export AWS_DEFAULT_REGION={region}')	# swap the region if need be
-			deploy_bootstrap_stacks.append(f'cd {stack["StackName"]}')	#cd to the stack
-			deploy_bootstrap_stacks.append('npm install')	#cd to the stack
-			deploy_bootstrap_stacks.append(f'npx cdk deploy --require-approval never') #deploy
-			deploy_bootstrap_stacks.append('cd ..') #return to the top directory
+			deploy_bootstrap_stacks.extend(
+				[
+					f'export AWS_DEFAULT_REGION={region}',
+					f'cd {stack["StackName"]}',
+					'npm install',
+					f'npx cdk deploy --require-approval never',
+					'cd ..'
+				]
+			)
+
 	deploy_bootstrap_stacks.append('echo "Finished Deploying Boostrap Stacks')
 	print('deploy_stacks_cmds:', deploy_bootstrap_stacks)
 	
