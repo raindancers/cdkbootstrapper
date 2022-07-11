@@ -7,11 +7,11 @@ export class BootstrapperStack extends Stack {
     super(scope, id, props);
 
     const bootstrap_props = {
-      CdkBootstrapRootQualifier: 'moecdk',
-      CdkBootstrapRootRegions: ['ap-southeast-2'],
+      CdkBootstrapRootQualifier: 'moecdk',          // make this what ever you want
+      CdkBootstrapRootRegions: ['ap-southeast-2'],  // list of regions you want to boostrap
       BootStrapStacks: [
         {
-          StackName: 'moe-admin-roles',
+          StackName: 'adminroles',
           Regions: ['ap-southeast-2']
         },   
       ]
