@@ -53,13 +53,14 @@ def on_event(event, context):
 				f'aws cloudformation create-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
-				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM || \
+				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && \
+				aws cloudformation wait stack-create-complete --stack-name CDKToolKit || \
 				aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
-				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM || \
-				echo no updates to the boostrap where required',
-				'aws cloudformation wait stack-create-complete --stack-name CDKToolKit'
+				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && \
+				aws cloudformation wait stack-update-complete --stack-name CDKToolKit || \
+				echo no updates to the boostrap where required' 
 			]
 		)
 	
