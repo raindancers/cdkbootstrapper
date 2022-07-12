@@ -27,6 +27,7 @@ def on_event(event, context):
 	# build the buildspec Bit
 	# link packages, authenticate and set the iam alias
 	build_commands = [
+
 		f'export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
 		$(aws sts assume-role \
 		--role-arn arn:aws:iam::{account_id}:role/AWSControlTowerExecution \
@@ -56,7 +57,9 @@ def on_event(event, context):
 				aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
-				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && '
+				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM || \
+				echo no updates to the boostrap where required',
+				'aws cloudformation wait stack-create-complete --stack-name CDKToolKit'
 			]
 		)
 	
@@ -75,15 +78,19 @@ def on_event(event, context):
 		for region in stack['Regions']:
 			deploy_bootstrap_stacks.extend(
 				[
+					# 'unset AWS_ACCESS_KEY_ID',			# return to using the codebuilds credentials
+					# 'unset AWS_SECRET_ACCESS_KEY',
+					# 'unset AWS_SESSION_TOKEN',
 					f'export AWS_DEFAULT_REGION={region}',
 					f'cd {stack["StackName"]}',
 					'npm install',
+					'aws sts get-caller-identity',
 					f'npx cdk deploy --require-approval never',
 					'cd ..'
 				]
 			)
 
-	deploy_bootstrap_stacks.append('echo "Finished Deploying Boostrap Stacks')
+	deploy_bootstrap_stacks.append('echo "Finished Deploying Boostrap Stacks"')
 	print('deploy_stacks_cmds:', deploy_bootstrap_stacks)
 	
 	buildspec = {
@@ -115,12 +122,11 @@ def on_event(event, context):
 		}
 	}
 
-	ssm.put_parameter(
-		Name=f'/cdk-bootstrap/{CDK_BOOTSTRAP_QUALIFER}/version',
-		Value='10',
-		Type='String',
-		Overwrite=True
-	)
+	# ssm.put_parameter(
+	# 	Name=f'/cdk-bootstrap/{CDK_BOOTSTRAP_QUALIFER}/version',
+	# 	Value='13',
+	# 	Type='String',
+	# )
 	
 	codebuild.start_build(
 		projectName = CODEBUILD_PROJECT_NAME,
