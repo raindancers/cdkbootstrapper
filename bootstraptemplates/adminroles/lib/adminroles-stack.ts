@@ -6,7 +6,7 @@ export class AdminrolesStack extends cdk.Stack {
   constructor(scope: constructs.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const identity_account = '02xxxxxx61';
+    const identity_account = '01';
 
     // admin-readonly
     const admin_ro = new iam.Role(this, 'AdminRO',{

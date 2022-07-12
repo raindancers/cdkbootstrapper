@@ -100,7 +100,9 @@ def on_event(event, context):
 				'runtime-versions': {
 					'nodejs': 'latest'
 				},
-				'commands': []
+				'commands': [
+					'n 16'
+				]
 			},
 			'build': {
 				'commands': build_commands + cdk_bootstrap_env + deploy_bootstrap_stacks
