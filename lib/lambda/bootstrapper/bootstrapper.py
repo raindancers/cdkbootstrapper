@@ -14,11 +14,18 @@ def on_event(event, context):
 	ROOT_ACCOUNT_ID = json.loads(os.environ['ROOT_ACCOUNT_ID'])
 	CODEBUILD_PROJECT_NAME = os.environ['CODEBUILD_PROJECT_NAME']
 	
-	
+	print('EVENT:')
+	print(event)
+
+
 	if 'source' in event.keys():
-		if event['source'] == 'aws.events': # this was invoked by eventbridge
+		if event['source'] == 'aws.controltower' and event['detail']['serviceEventDetails']['createManagedAccountStatus']['message'] == 'AWS Control Tower successfully created an enrolled account.':
+			 # this was invoked by eventbridge
 			account_name = event['detail']['serviceEventDetails']['createManagedAccountStatus']['account']['accountName']
 			account_id = event['detail']['serviceEventDetails']['createManagedAccountStatus']['account']['accountId']
+
+		else:
+			return		# do nothing this was not an event we care about.
 
 	else: # this was invoked by a test event
 		account_id = event['accountId']
@@ -50,17 +57,17 @@ def on_event(event, context):
 		cdk_bootstrap_env.extend(
 			[
 				f'export AWS_DEFAULT_REGION={region}',
-				f'aws cloudformation create-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
+				f'( aws cloudformation create-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
 				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && \
-				aws cloudformation wait stack-create-complete --stack-name CDKToolKit || \
-				aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
+				aws cloudformation wait stack-create-complete --stack-name CDKToolKit ) || \
+				( aws cloudformation update-stack --stack-name CDKToolKit --template-body file://cdk.out/IncludelabStack.template.json --parameters \
 				ParameterKey=TrustedAccounts,ParameterValue={ROOT_ACCOUNT_ID} \
 				ParameterKey=CloudFormationExecutionPolicies,ParameterValue=arn:aws:iam::aws:policy/AdministratorAccess \
 				ParameterKey=Qualifier,ParameterValue={CDK_BOOTSTRAP_QUALIFER} --capabilities=CAPABILITY_NAMED_IAM && \
-				aws cloudformation wait stack-update-complete --stack-name CDKToolKit || \
-				echo no updates to the boostrap where required' 
+				aws cloudformation wait stack-update-complete --stack-name CDKToolKit ) || \
+				echo no updates to the boostrap where required'
 			]
 		)
 	
